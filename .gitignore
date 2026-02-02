@@ -1,0 +1,5 @@
+*.p12
+.env
+.env_github
+/artifacts/
+/android/
