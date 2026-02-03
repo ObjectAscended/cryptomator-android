@@ -51,6 +51,9 @@ jobs:
             -v "${{ runner.temp }}/release.p12":/build/release.p12:ro \
             -v ./artifacts:/build/artifacts \
             --env-file "${{ runner.temp }}/.env" \
+            -e GIT_CONFIG_COUNT=1 \
+            -e GIT_CONFIG_KEY_0=safe.directory \
+            -e GIT_CONFIG_VALUE_0=* \
             cryptomator-android-builder
 
       - name: create release
