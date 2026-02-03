@@ -1,0 +1,61 @@
+name: build cryptomator apk
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: checkout builder
+        uses: actions/checkout@v5
+        with:
+          path: cryptomator-builder
+
+      - name: build docker image
+        working-directory: cryptomator-builder
+        run: |
+          docker build -t cryptomator-android-builder .
+
+      - name: config environment
+        run: |
+          {
+            echo "DROPBOX_API_KEY=${{ secrets.DROPBOX_API_KEY }}"
+            echo "ONEDRIVE_API_KEY=${{ secrets.ONEDRIVE_API_KEY }}"
+            echo "ONEDRIVE_API_REDIRCT_URI=${{ secrets.ONEDRIVE_API_REDIRCT_URI }}"
+            echo "PCLOUD_CLIENT_ID=${{ secrets.PCLOUD_CLIENT_ID }}"
+
+            echo "SIGNING_KEYSTORE_PASSWORD=${{ secrets.SIGNING_KEYSTORE_PASSWORD }}"
+            echo "SIGNING_KEY_ALIAS=${{ secrets.SIGNING_KEY_ALIAS }}"
+            echo "SIGNING_KEY_PASSWORD=${{ secrets.SIGNING_KEY_PASSWORD }}"
+          } >> "${{ runner.temp }}/.env"
+
+          echo "${{ secrets.SIGNING_KEYSTORE_BASE64 }}" | base64 --decode > "${{ runner.temp }}/release.p12"
+
+      - name: checkout cryptomator
+        uses: actions/checkout@v5
+        with:
+          repository: cryptomator/android
+          ref: ${{ github.ref_name || 'main' }}
+          path: cryptomator-android
+
+      - name: build apk
+        run: |
+          docker run \
+            -v ./cryptomator-android:/build/cryptomator-android \
+            -v "${{ runner.temp }}/release.p12":/build/release.p12:ro \
+            -v ./artifacts:/build/artifacts \
+            --env-file "${{ runner.temp }}/.env" \
+            cryptomator-android-builder
+
+      - name: create release
+        uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
+        with:
+          files: |
+            ./artifacts/cryptomator-*.apk
