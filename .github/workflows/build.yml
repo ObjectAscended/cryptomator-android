@@ -17,24 +17,29 @@ jobs:
         with:
           path: cryptomator-builder
 
-      - name: build docker image
+      - name: build docker images
         working-directory: cryptomator-builder
         run: |
-          docker build -t cryptomator-android-builder .
+          docker build --target builder -t cryptomator-android-builder .
+          docker build --target signer -t cryptomator-android-signer .
 
-      - name: config environment
+      - name: config environments
         run: |
+          # Build environment (No signing keys)
           {
             echo "DROPBOX_API_KEY=${{ secrets.DROPBOX_API_KEY }}"
             echo "ONEDRIVE_API_KEY=${{ secrets.ONEDRIVE_API_KEY }}"
             echo "ONEDRIVE_API_REDIRCT_URI=${{ secrets.ONEDRIVE_API_REDIRCT_URI }}"
             echo "PCLOUD_CLIENT_ID=${{ secrets.PCLOUD_CLIENT_ID }}"
+          } >> "${{ runner.temp }}/.env.build"
 
+          # Sign environment (Only signing keys)
+          {
             echo "SIGNING_ENABLED=${{ secrets.SIGNING_ENABLED }}"
             echo "SIGNING_KEYSTORE_PASSWORD=${{ secrets.SIGNING_KEYSTORE_PASSWORD }}"
             echo "SIGNING_KEY_ALIAS=${{ secrets.SIGNING_KEY_ALIAS }}"
             echo "SIGNING_KEY_PASSWORD=${{ secrets.SIGNING_KEY_PASSWORD }}"
-          } >> "${{ runner.temp }}/.env"
+          } >> "${{ runner.temp }}/.env.sign"
 
           echo "${{ secrets.SIGNING_KEYSTORE_BASE64 }}" | base64 --decode > "${{ runner.temp }}/release.p12"
 
@@ -49,13 +54,20 @@ jobs:
         run: |
           docker run \
             -v ./cryptomator-android:/build/cryptomator-android \
-            -v "${{ runner.temp }}/release.p12":/build/release.p12:ro \
             -v ./artifacts:/build/artifacts \
-            --env-file "${{ runner.temp }}/.env" \
+            --env-file "${{ runner.temp }}/.env.build" \
             -e GIT_CONFIG_COUNT=1 \
             -e GIT_CONFIG_KEY_0=safe.directory \
             -e GIT_CONFIG_VALUE_0=* \
             cryptomator-android-builder
+
+      - name: sign apk
+        run: |
+          docker run \
+            -v "${{ runner.temp }}/release.p12":/build/release.p12:ro \
+            -v ./artifacts:/build/artifacts \
+            --env-file "${{ runner.temp }}/.env.sign" \
+            cryptomator-android-signer
 
       - name: create release
         uses: softprops/action-gh-release@v2
