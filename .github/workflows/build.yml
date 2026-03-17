@@ -81,6 +81,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.event_name != 'pull_request'
         with:
-          name: ${{ env.CRYPTOMATOR_VERSION }}
+          tag_name: ${{ env.CRYPTOMATOR_VERSION }}
           files: |
             ./artifacts/cryptomator-*.apk
