@@ -61,6 +61,7 @@ jobs:
 
       - name: build apk
         run: |
+          mkdir -p artifacts
           podman run \
             -v ./cryptomator-android:/build/cryptomator-android \
             -v ./artifacts:/build/artifacts \
