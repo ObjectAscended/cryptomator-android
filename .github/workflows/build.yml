@@ -19,11 +19,12 @@ jobs:
         with:
           path: cryptomator-builder
 
-      - name: build docker images
+      - name: build podman images
         working-directory: cryptomator-builder
         run: |
-          docker build --target builder -t cryptomator-android-builder .
-          docker build --target signer -t cryptomator-android-signer .
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends podman
+          podman build --target builder -t cryptomator-android-builder .
+          podman build --target signer -t cryptomator-android-signer .
 
       - name: config environments
         run: |
@@ -60,7 +61,7 @@ jobs:
 
       - name: build apk
         run: |
-          docker run \
+          podman run \
             -v ./cryptomator-android:/build/cryptomator-android \
             -v ./artifacts:/build/artifacts \
             --env-file "${{ runner.temp }}/.env.build" \
@@ -72,7 +73,7 @@ jobs:
 
       - name: sign apk
         run: |
-          docker run \
+          podman run \
             -v "${{ runner.temp }}/release.p12":/build/release.p12:ro \
             -v ./artifacts:/build/artifacts \
             --env-file "${{ runner.temp }}/.env.sign" \
