@@ -1,10 +1,12 @@
 name: build cryptomator apk
 
 on:
-  push:
-    tags:
-      - '[0-9]+.[0-9]+.[0-9]+'
+  push:    
+  pull_request:
   workflow_dispatch:
+
+env:
+  CRYPTOMATOR_VERSION: "1.12.3"
 
 jobs:
   build:
@@ -35,7 +37,6 @@ jobs:
 
           # Sign environment (Only signing keys)
           {
-            echo "SIGNING_ENABLED=${{ secrets.SIGNING_ENABLED }}"
             echo "SIGNING_KEYSTORE_PASSWORD=${{ secrets.SIGNING_KEYSTORE_PASSWORD }}"
             echo "SIGNING_KEY_ALIAS=${{ secrets.SIGNING_KEY_ALIAS }}"
             echo "SIGNING_KEY_PASSWORD=${{ secrets.SIGNING_KEY_PASSWORD }}"
@@ -47,8 +48,13 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: cryptomator/android
-          ref: ${{ (github.ref_type == 'tag' && github.ref_name) || '' }}
+          ref: ${{ env.CRYPTOMATOR_VERSION }}
           path: cryptomator-android
+
+      - name: apply patches
+        working-directory: cryptomator-android
+        run: |
+          git am --3way ../cryptomator-builder/patches/*.patch
 
       - name: build apk
         run: |
@@ -71,7 +77,8 @@ jobs:
 
       - name: create release
         uses: softprops/action-gh-release@v2
-        if: github.ref_type == 'tag'
+        if: github.event_name != 'pull_request'
         with:
+          name: ${{ env.CRYPTOMATOR_VERSION }}
           files: |
             ./artifacts/cryptomator-*.apk
