@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
 
 env:
+  # renovate: datasource=github-releases depName=cryptomator/android
   CRYPTOMATOR_VERSION: "1.12.3"
 
 jobs:
