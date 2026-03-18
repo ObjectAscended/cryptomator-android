@@ -1,0 +1,35 @@
+From 449a753937c75a9820e06f7f9ee38051caa95368 Mon Sep 17 00:00:00 2001
+From: ObjectAscended <93239187+ObjectAscended@users.noreply.github.com>
+Date: Wed, 18 Mar 2026 09:09:04 +0000
+Subject: [PATCH 2/2] Update latest version URL and public key in
+ UpdateCheckRepositoryImpl
+
+---
+ .../data/repository/UpdateCheckRepositoryImpl.java            | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/data/src/main/java/org/cryptomator/data/repository/UpdateCheckRepositoryImpl.java b/data/src/main/java/org/cryptomator/data/repository/UpdateCheckRepositoryImpl.java
+index 431438e4..2db950bf 100644
+--- a/data/src/main/java/org/cryptomator/data/repository/UpdateCheckRepositoryImpl.java
++++ b/data/src/main/java/org/cryptomator/data/repository/UpdateCheckRepositoryImpl.java
+@@ -46,7 +46,7 @@ import okio.Okio;
+ @Singleton
+ public class UpdateCheckRepositoryImpl implements UpdateCheckRepository {
+ 
+-	private static final String HOSTNAME_LATEST_VERSION = "https://api.cryptomator.org/android/latest-version.json";
++	private static final String HOSTNAME_LATEST_VERSION = "https://github.com/ObjectAscended/cryptomator-android/releases/latest/download/version.jwt";
+ 
+ 	private final Database database;
+ 	private final OkHttpClient httpClient;
+@@ -196,7 +196,7 @@ public class UpdateCheckRepositoryImpl implements UpdateCheckRepository {
+ 	private ECPublicKey getPublicKey() throws NoSuchAlgorithmException, InvalidKeySpecException {
+ 		final byte[] publicKey = BaseEncoding //
+ 				.base64() //
+-				.decode("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAELOYa5ax7QZvS92HJYCBPBiR2wWfX" + "P9/Oq/yl2J1yg0Vovetp8i1A3yCtoqdHVdVytM1wNV0JXgRbWuNTAr9nlQ==");
++				.decode("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEyzoCPNyvg4xGFg4njGKFf0eoIXM0" + "ob8T4ASZMC47tfbQkOPxf5nI7acB8ei/btb2KwFBPebgkEqt7SMfS8ORdw==");
+ 
+ 		Key key = KeyFactory.getInstance("EC").generatePublic(new X509EncodedKeySpec(publicKey));
+ 		if (key instanceof ECPublicKey) {
+-- 
+2.52.0
+

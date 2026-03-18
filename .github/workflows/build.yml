@@ -80,10 +80,42 @@ jobs:
             --env-file "${{ runner.temp }}/.env.sign" \
             cryptomator-android-signer
 
+      - name: prepare release
+        env:
+          CRYPTOMATOR_VERSION: ${{ env.CRYPTOMATOR_VERSION }}
+          ES256_PRIVATE_KEY: ${{ secrets.ES256_PRIVATE_KEY }}
+        run: |
+          mkdir -p release
+          cp ./artifacts/cryptomator-apkstore.apk ./release/cryptomator.apk
+
+          npm install jsonwebtoken
+          node << 'EOF'
+            const fs = require('fs');
+            const crypto = require('crypto');
+            const jwt = require('jsonwebtoken');
+
+            const CRYPTOMATOR_VERSION = process.env.CRYPTOMATOR_VERSION;
+            const ES256_PRIVATE_KEY = process.env.ES256_PRIVATE_KEY;
+
+            const fileBuffer = fs.readFileSync('./release/cryptomator.apk');
+            const apkHash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
+
+            const payload = {
+              version: CRYPTOMATOR_VERSION,
+              url: `https://github.com/ObjectAscended/cryptomator-android/releases/download/${CRYPTOMATOR_VERSION}/cryptomator.apk`,
+              apk_sha_256: apkHash,
+              release_notes: `https://static.cryptomator.org/android/${CRYPTOMATOR_VERSION}/release-notes.html`
+            };
+            
+            const token = jwt.sign(payload, ES256_PRIVATE_KEY, { algorithm: 'ES256' });
+
+            fs.writeFileSync('./release/version.jwt', token);
+          EOF
+
       - name: create release
         uses: softprops/action-gh-release@v2
         if: github.event_name != 'pull_request'
         with:
           tag_name: ${{ env.CRYPTOMATOR_VERSION }}
           files: |
-            ./artifacts/cryptomator-*.apk
+            ./release/*
