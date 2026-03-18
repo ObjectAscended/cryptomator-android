@@ -7,5 +7,12 @@
         "#\\s*renovate:\\s*datasource=(?<datasource>[^\\s]+)\\s*depName=(?<depName>[^\\s]+)\\s*\\n\\s*[A-Za-z0-9_]+:\\s*[\"']?(?<currentValue>[^\"'\\s]+)[\"']?"
       ]
     }
+  ],
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true,
+      "platformAutomerge": true
+    }
   ]
 }
