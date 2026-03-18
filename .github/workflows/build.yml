@@ -16,7 +16,7 @@ jobs:
       contents: write
     steps:
       - name: checkout builder
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           path: cryptomator-builder
 
@@ -47,7 +47,7 @@ jobs:
           echo "${{ secrets.SIGNING_KEYSTORE_BASE64 }}" | base64 --decode > "${{ runner.temp }}/release.p12"
 
       - name: checkout cryptomator
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: cryptomator/android
           ref: ${{ env.CRYPTOMATOR_VERSION }}
