@@ -87,7 +87,7 @@ jobs:
           ES256_PRIVATE_KEY: ${{ secrets.ES256_PRIVATE_KEY }}
         run: |
           mkdir -p release
-          cp ./artifacts/cryptomator-apkstore.apk ./release/cryptomator.apk
+          cp ./artifacts/cryptomator-apkstore.apk ./release/cryptomator-${{ env.CRYPTOMATOR_VERSION }}.apk
 
           npm install jsonwebtoken
           node << 'EOF'
@@ -98,12 +98,12 @@ jobs:
             const CRYPTOMATOR_VERSION = process.env.CRYPTOMATOR_VERSION;
             const ES256_PRIVATE_KEY = process.env.ES256_PRIVATE_KEY;
 
-            const fileBuffer = fs.readFileSync('./release/cryptomator.apk');
+            const fileBuffer = fs.readFileSync(`./release/cryptomator-${CRYPTOMATOR_VERSION}.apk`);
             const apkHash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
 
             const payload = {
               version: CRYPTOMATOR_VERSION,
-              url: `https://github.com/ObjectAscended/cryptomator-android/releases/download/${CRYPTOMATOR_VERSION}/cryptomator.apk`,
+              url: `https://github.com/ObjectAscended/cryptomator-android/releases/download/${CRYPTOMATOR_VERSION}/cryptomator-${CRYPTOMATOR_VERSION}.apk`,
               apk_sha_256: apkHash,
               release_notes: `https://static.cryptomator.org/android/${CRYPTOMATOR_VERSION}/release-notes.html`
             };
