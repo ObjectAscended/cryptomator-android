@@ -1,7 +1,9 @@
 name: build cryptomator apk
 
 on:
-  push:    
+  push:
+    branches:
+      - master
   pull_request:
   workflow_dispatch:
 
