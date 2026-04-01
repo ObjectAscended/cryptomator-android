@@ -1,4 +1,4 @@
-FROM ubuntu:resolute-20260312 AS builder
+FROM ubuntu:resolute-20260401 AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -19,7 +19,7 @@ WORKDIR /build/cryptomator-android/
 ENTRYPOINT ["/bin/bash", "/build/build.sh"]
 
 
-FROM ubuntu:resolute-20260312 AS signer
+FROM ubuntu:resolute-20260401 AS signer
 
 ENV DEBIAN_FRONTEND=noninteractive
 
