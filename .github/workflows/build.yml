@@ -103,9 +103,11 @@ jobs:
             const fileBuffer = fs.readFileSync(`./release/cryptomator-${CRYPTOMATOR_VERSION}.apk`);
             const apkHash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
 
+            fs.copyFileSync(`./release/cryptomator-${CRYPTOMATOR_VERSION}.apk`, `./release/cryptomator-${CRYPTOMATOR_VERSION}.${apkHash}.apk`);
+
             const payload = {
               version: CRYPTOMATOR_VERSION,
-              url: `https://github.com/ObjectAscended/cryptomator-android/releases/download/${CRYPTOMATOR_VERSION}/cryptomator-${CRYPTOMATOR_VERSION}.apk`,
+              url: `https://github.com/ObjectAscended/cryptomator-android/releases/download/${CRYPTOMATOR_VERSION}/cryptomator-${CRYPTOMATOR_VERSION}.${apkHash}.apk`,
               apk_sha_256: apkHash,
               release_notes: `https://static.cryptomator.org/android/${CRYPTOMATOR_VERSION}/release-notes.html`
             };
