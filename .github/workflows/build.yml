@@ -9,7 +9,7 @@ on:
 
 env:
   # renovate: datasource=github-releases depName=cryptomator/android
-  CRYPTOMATOR_VERSION: "1.12.3"
+  CRYPTOMATOR_VERSION: "2.0.0"
 
 jobs:
   build:
