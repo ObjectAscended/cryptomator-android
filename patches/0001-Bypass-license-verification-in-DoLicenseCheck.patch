@@ -1,27 +1,24 @@
-From 43ac767520784c2e229b019d666863b4e205fa1b Mon Sep 17 00:00:00 2001
+From 32dab08569a20529bd1d0ac4a3aa1a1082ef1a98 Mon Sep 17 00:00:00 2001
 From: ObjectAscended <93239187+ObjectAscended@users.noreply.github.com>
 Date: Wed, 18 Mar 2026 09:08:58 +0000
-Subject: [PATCH 1/2] Refactor license check logic to return an empty string
- instead of performing verification
+Subject: [PATCH] Bypass license verification in DoLicenseCheck
 
+Refactors the license check logic to skip JWT decoding and cryptographic signature verification, instead directly saving and returning the license token.
 ---
- .../domain/usecases/DoLicenseCheck.java          | 16 +---------------
- 1 file changed, 1 insertion(+), 15 deletions(-)
+ .../domain/usecases/DoLicenseCheck.java            | 14 ++------------
+ 1 file changed, 2 insertions(+), 12 deletions(-)
 
 diff --git a/domain/src/main/java/org/cryptomator/domain/usecases/DoLicenseCheck.java b/domain/src/main/java/org/cryptomator/domain/usecases/DoLicenseCheck.java
-index a3d52e3c..0b752e84 100644
+index 8a8cc9e5..74b126e3 100644
 --- a/domain/src/main/java/org/cryptomator/domain/usecases/DoLicenseCheck.java
 +++ b/domain/src/main/java/org/cryptomator/domain/usecases/DoLicenseCheck.java
-@@ -45,21 +45,7 @@ public class DoLicenseCheck {
- 	}
+@@ -33,18 +33,8 @@ public class DoLicenseCheck {
  
  	public LicenseCheck execute() throws BackendException {
--		license = useLicenseOrRetrieveFromDb(license);
--		license = CharMatcher.whitespace().removeFrom(license);
+ 		license = useLicenseOrRetrieveFromPreferences(license);
 -		try {
--			Algorithm algorithm = Algorithm.ECDSA512(getPublicKey(ANDROID_PUB_KEY), null);
--			JWTVerifier verifier = JWT.require(algorithm).build();
--			DecodedJWT jwt = verifier.verify(license);
+-			DecodedJWT jwt = AndroidLicenseVerifier.verify(license, AndroidLicenseVerifier.ANDROID_PUB_KEY);
+-			sharedPreferencesHandler.setLicenseToken(license);
 -			return jwt::getSubject;
 -		} catch (SignatureVerificationException | JWTDecodeException | FatalBackendException e) {
 -			if (e instanceof SignatureVerificationException && isDesktopSupporterCertificate(license)) {
@@ -31,12 +28,11 @@ index a3d52e3c..0b752e84 100644
 -		} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
 -			throw new FatalBackendException(e);
 -		}
-+		return () -> "";
++		sharedPreferencesHandler.setLicenseToken(license);
++		return () -> license;
  	}
  
- 	private String useLicenseOrRetrieveFromDb(String license) throws NoLicenseAvailableException {
-
-base-commit: 640592d387078ab655cad27a4d7a48a49feea351
+ 	private String useLicenseOrRetrieveFromPreferences(String license) throws NoLicenseAvailableException {
 -- 
-2.52.0
+2.53.0
 
